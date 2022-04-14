@@ -2,6 +2,7 @@ import socket
 import numpy as np
 import pickle
 import time
+import struct
 
 class NPSocket():
     '''
@@ -48,8 +49,7 @@ class NPSocket():
     
     def client_send_int(self, num):
         start_time = time.time()
-        buff = str(num) + " "
-        self.client_socket.sendall(buff)
+        self.client_socket.sendall(num.to_bytes())
         print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
     
     def server_receive_int(self):
@@ -59,7 +59,7 @@ class NPSocket():
             receiving_buffer = self.client_connection.recv(8)
             if not receiving_buffer: break
             data += receiving_buffer
-        out = int(data)
+        out = int(data.from_bytes())
         print(f'Int Received in {(time.time() - start_time) * 1000} ms')
         return out
     

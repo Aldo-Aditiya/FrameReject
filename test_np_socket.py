@@ -20,7 +20,7 @@ np_socket = NPSocket()
 if FLAGS.server:
     np_socket.start_server(FLAGS.port)
     
-    num = np.socket.server_receive_int()
+    num = np_socket.server_receive_int()
     print(num)
     
     data = np.zeros((5,5))

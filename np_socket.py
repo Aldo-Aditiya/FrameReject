@@ -29,13 +29,13 @@ class NPSocket():
         except socket.error:
             print(f'Connection to {server_address} on port {port} failed: {socket.error} \n')
     
-    def send_arr(self, arr):
+    def server_send_arr(self, arr):
         start_time = time.time()
         serialized = pickle.dumps(arr, protocol=2)
         self.client_connection.send(serialized)
         print(f'Arr Sent in {(time.time() - start_time) * 1000} ms')
         
-    def receive_arr(self):
+    def client_receive_arr(self):
         start_time = time.time()
         data = b''
         while True:
@@ -43,7 +43,24 @@ class NPSocket():
             if not receiving_buffer: break
             data += receiving_buffer
         out = pickle.loads(data)
-        print(f'Arr Received in {(time.time() - start_time) * 1000} s')
+        print(f'Arr Received in {(time.time() - start_time) * 1000} ms')
+        return out
+    
+    def client_send_int(self, num):
+        start_time = time.time()
+        buff = str(num) + " "
+        self.client_socket.sendall(buff)
+        print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
+    
+    def server_receive_int(self):
+        start_time = time.time()
+        data = ''
+        while True:
+            receiving_buffer = self.client_connection.recv(8)
+            if not receiving_buffer: break
+            data += receiving_buffer
+        out = int(data)
+        print(f'Int Received in {(time.time() - start_time) * 1000} ms')
         return out
     
     def close_server(self):

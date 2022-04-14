@@ -25,7 +25,7 @@ class NPSocket():
     
     def send_arr(self, arr):
         serialized = pickle.dumps(arr, protocol=2)
-        self.client_socket.sendall(serialize)
+        self.client_socket.sendall(serialized)
         print('Arr Sent')
         
     def receive_arr(self):

@@ -49,17 +49,17 @@ class NPSocket():
     
     def client_send_int(self, num):
         start_time = time.time()
-        self.client_socket.sendall(num.to_bytes())
+        self.client_socket.sendall(str(num).encode('utf8'))
         print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
     
     def server_receive_int(self):
         start_time = time.time()
-        data = ''
+        data = b''
         while True:
             receiving_buffer = self.client_connection.recv(8)
             if not receiving_buffer: break
             data += receiving_buffer
-        out = int(data.from_bytes())
+        out = int(data.decode('utf8'))
         print(f'Int Received in {(time.time() - start_time) * 1000} ms')
         return out
     

@@ -21,7 +21,7 @@ if FLAGS.server:
     np_socket.close_server()
     
 else:
-    np_socket.start_client(FLASG.server_address, FLAGS.port)
+    np_socket.start_client(FLAGS.server_address, FLAGS.port)
     
     data = np.zeros((5,5))
     np_socket.send_arr(data)

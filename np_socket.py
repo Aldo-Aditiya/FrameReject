@@ -1,6 +1,7 @@
 import socket
 import numpy as np
 import pickle
+import time
 
 class NPSocket():
     '''
@@ -29,19 +30,20 @@ class NPSocket():
             print(f'Connection to {server_address} on port {port} failed: {socket.error} \n')
     
     def send_arr(self, arr):
+        start_time = time.time()
         serialized = pickle.dumps(arr, protocol=2)
-        self.client_socket.sendall(serialized)
-        print('Arr Sent')
+        self.server_socket.sendall(serialized)
+        print(f'Arr Sent in {time.time() - start_time} s')
         
     def receive_arr(self):
+        start_time = time.time()
         data = b''
         while True:
-            receiving_buffer = self.client_connection.recv(1024)
+            receiving_buffer = self.client_socket.recv(1024)
             if not receiving_buffer: break
             data += receiving_buffer
-            print('-'),
         out = pickle.loads(data)
-        print('Arr Received')
+        print(f'Arr Received in {time.time() - start_time} s')
         return out
     
     def close_server(self):

@@ -19,17 +19,19 @@ np_socket = NPSocket()
                     
 if FLAGS.server:
     np_socket.start_server(FLAGS.port)
-    data = np_socket.receive_arr()
     
-    print(data)
+    data = np.zeros((5,5))
+    np_socket.send_arr(data)
+    
     np_socket.close_server()
     
 else:
     np_socket.start_client(FLAGS.server_address, FLAGS.port)
     
-    data = np.zeros((5,5))
-    np_socket.send_arr(data)
     
-    np_socket.close_client
+    data = np_socket.receive_arr()
+    
+    print(data)
+    np_socket.close_client()
 
 sys.exit()

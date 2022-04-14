@@ -3,6 +3,11 @@ import numpy as np
 import pickle
 
 class NPSocket():
+    '''
+    Class to facilitate numpy array sending between client and server, 
+    through sockets
+    '''
+    
     def __init__(self):
         pass
 

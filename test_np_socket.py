@@ -3,6 +3,10 @@ import argparse
 import numpy as np
 from np_socket import NPSocket
 
+'''
+Test Code for NPSocket Class
+'''
+
 parser = argparse.ArgumentParser(description='')
 
 parser.add_argument('-s', help='Call if Server', action='store_true', dest='server')

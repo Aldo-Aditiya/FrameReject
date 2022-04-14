@@ -20,13 +20,13 @@ class NPSocket():
         try:
             self.client_socket.connect((server_address, port))
             print(f'Connected to {server_address} on port {port} \n')
-        except socket.error, e:
-            print(f'Connection to {server_address} on port {port} failed: {e} \n')
+        except socket.error:
+            print(f'Connection to {server_address} on port {port} failed: {socket.error} \n')
     
     def send_arr(self, arr):
         serialized = pickle.dumps(arr, protocol=2)
         self.client_socket.sendall(serialize)
-        print 'Arr Sent'
+        print('Arr Sent')
         
     def receive_arr(self):
         data = b''
@@ -36,7 +36,7 @@ class NPSocket():
             data += receiving_buffer
             print('-'),
         out = pickle.loads(data)
-        print 'Arr Received'
+        print('Arr Received')
         return out
     
     def close_server(self):

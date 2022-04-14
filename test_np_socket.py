@@ -5,14 +5,14 @@ from np_socket import NPSocket
 
 parser = argparse.ArgumentParser(description='')
 
-parser.add_argument('--server', help='Call if Server, Do not Call if Client', dest='server_store', action=argparse.BooleanOptionalAction)
-parser.add_argument('--server_address', help='Server IP Address', dest='server_address')
-parser.add_argument('--port', help='Socket Port', dest='port')
+parser.add_argument('-s', help='Call if Server', action='store_true', dest='server')
+parser.add_argument('--server_address', type=str, help='Server IP Address', dest='server_address')
+parser.add_argument('--port', type=int, help='Socket Port', dest='port')
 
 FLAGS = parser.parse_args()
 
 np_socket = NPSocket()
-
+                    
 if FLAGS.server:
     np_socket.start_server(FLAGS.port)
     data = np_socket.receive_arr()

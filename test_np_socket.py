@@ -32,7 +32,7 @@ else:
     np_socket.start_client(FLAGS.server_address, FLAGS.port)
     
     num = 2
-    np.socket.client_send_int(num)
+    np_socket.client_send_int(num)
     
     data = np_socket.client_receive_arr()
     

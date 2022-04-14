@@ -28,7 +28,6 @@ if FLAGS.server:
 else:
     np_socket.start_client(FLAGS.server_address, FLAGS.port)
     
-    
     data = np_socket.receive_arr()
     
     print(data)

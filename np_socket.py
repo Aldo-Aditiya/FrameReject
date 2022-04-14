@@ -32,7 +32,7 @@ class NPSocket():
     def send_arr(self, arr):
         start_time = time.time()
         serialized = pickle.dumps(arr, protocol=2)
-        self.server_socket.sendall(serialized)
+        self.server_socket.send(serialized)
         print(f'Arr Sent in {time.time() - start_time} s')
         
     def receive_arr(self):

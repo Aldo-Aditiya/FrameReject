@@ -33,7 +33,7 @@ class NPSocket():
         start_time = time.time()
         serialized = pickle.dumps(arr, protocol=2)
         self.client_connection.send(serialized)
-        print(f'Arr Sent in {time.time() - start_time} s')
+        print(f'Arr Sent in {(time.time() - start_time) * 1000} ms')
         
     def receive_arr(self):
         start_time = time.time()
@@ -43,7 +43,7 @@ class NPSocket():
             if not receiving_buffer: break
             data += receiving_buffer
         out = pickle.loads(data)
-        print(f'Arr Received in {time.time() - start_time} s')
+        print(f'Arr Received in {(time.time() - start_time) * 1000} s')
         return out
     
     def close_server(self):

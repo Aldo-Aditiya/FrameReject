@@ -31,29 +31,32 @@ class GameSocket():
             print(f'Connection to {server_address} on port {port} failed: {socket.error} \n')
     
     def server_send_arr(self, arr):
+        print('Sending Arr...')
         start_time = time.time()
         serialized = pickle.dumps(arr, protocol=2)
         self.client_connection.send(serialized)
         print(f'Arr Sent in {(time.time() - start_time) * 1000} ms')
         
     def client_receive_arr(self):
+        print('Receiving Arr...')
         start_time = time.time()
         data = b''
         while True:
             receiving_buffer = self.client_socket.recv(1024)
             if not receiving_buffer: break
             data += receiving_buffer
-            print('debug')
         out = pickle.loads(data)
         print(f'Arr Received in {(time.time() - start_time) * 1000} ms')
         return out
     
     def client_send_int(self, num):
+        print('Sending Int...')
         start_time = time.time()
         self.client_socket.sendall(str(num).encode('utf8'))
         print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
     
     def server_receive_int(self):
+        print('Receiving Int...')
         start_time = time.time()
         data = b''
         while True:

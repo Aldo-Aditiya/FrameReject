@@ -31,6 +31,9 @@ class GameSocket():
             print(f'Connection to {server_address} on port {port} failed: {socket.error} \n')
     
     def server_send_arr(self, arr):
+        '''
+        Sending frames as np array from Server to Client
+        '''
         print('Sending Arr...')
         start_time = time.time()
         serialized = pickle.dumps(arr, protocol=2)
@@ -38,6 +41,9 @@ class GameSocket():
         print(f'Arr Sent in {(time.time() - start_time) * 1000} ms')
         
     def client_receive_arr(self):
+        '''
+        Receiving frames as np array from Server
+        '''
         print('Receiving Arr...')
         start_time = time.time()
         data = b''
@@ -50,12 +56,18 @@ class GameSocket():
         return out
     
     def client_send_int(self, num):
+        '''
+        Sending input as int from Client to Server
+        '''
         print('Sending Int...')
         start_time = time.time()
         self.client_socket.sendall(str(num).encode('utf8'))
         print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
     
     def server_receive_int(self):
+        '''
+        Receiving input as int from Server
+        '''
         print('Receiving Int...')
         start_time = time.time()
         data = b''

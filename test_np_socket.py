@@ -4,7 +4,7 @@ import numpy as np
 from np_socket import GameSocket
 
 '''
-Test Code for NPSocket Class
+Test Code for GameSocket Class
 '''
 
 parser = argparse.ArgumentParser(description='')

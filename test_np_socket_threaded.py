@@ -26,7 +26,7 @@ class ServerInputReceiver(Thread):
     def __init__(self, q, rcv_socket):
         Thread.__init__(self)
         self.daemon = True
-        self.__stop_event = threading.Event()
+        self._stop_event = threading.Event()
     
     def run(self):
         while not self.stopped():
@@ -43,7 +43,7 @@ class ClientInputSender(Thread):
     def __init__(self, send_socket):
         Thread.__init__(self)
         self.daemon = True
-        self.__stop_event = threading.Event()
+        self._stop_event = threading.Event()
         self.start()
 
     def run(self):

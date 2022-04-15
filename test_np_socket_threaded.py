@@ -28,6 +28,7 @@ class ServerInputReceiver(Thread):
         Thread.__init__(self)
         self.daemon = True
         self._stop_event = threading.Event()
+        self.start()
     
     def run(self):
         while not self.stopped():
@@ -51,9 +52,9 @@ class ClientInputSender(Thread):
     def run(self):
         while not self.stopped():
             num = 2
-            time.sleep(1)
             print("--thread")
             send_socket.client_send_int(num)
+            time.sleep(1)
         
     def stop(self):
         self._stop_event.set()
@@ -85,7 +86,7 @@ if FLAGS.server:
         server_loop(main_socket)
         time.sleep(0.5)
     
-    print(q)
+    print(list(q.queue))
     
     t_sr.stop()
     rcv_socket.close_server()

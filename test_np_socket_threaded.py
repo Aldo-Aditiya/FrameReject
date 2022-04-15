@@ -1,6 +1,7 @@
 import sys
 import argparse
 from queue import Queue
+import threading
 from threading import Thread
 
 import numpy as np
@@ -45,7 +46,7 @@ class ClientInputSender(Thread):
         self.__stop_event = threading.Event()
         self.start()
 
-    def run(self)
+    def run(self):
         while not self.stopped():
             num = 2
             sleep(1)
@@ -89,10 +90,10 @@ if FLAGS.server:
 else:
     
     main_socket = GameSocket()
-    main_socket.start_server(FLAGS.server_address, FLAGS.main_port)
+    main_socket.start_client(FLAGS.server_address, FLAGS.main_port)
     
     send_socket = GameSocket()
-    send_socket.start_server(FLAGS.server_address, FLAGS.input_port)
+    send_socket.start_client(FLAGS.server_address, FLAGS.input_port)
     t_cs = ClientInputSender(send_socket)
     
     while(i <= 10):

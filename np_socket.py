@@ -4,9 +4,9 @@ import pickle
 import time
 import struct
 
-class NPSocket():
+class GameSocket():
     '''
-    Class to facilitate numpy array sending between client and server, 
+    Class to facilitate game data sending between client and server, 
     through sockets
     '''
     
@@ -43,6 +43,7 @@ class NPSocket():
             receiving_buffer = self.client_socket.recv(1024)
             if not receiving_buffer: break
             data += receiving_buffer
+            print('debug')
         out = pickle.loads(data)
         print(f'Arr Received in {(time.time() - start_time) * 1000} ms')
         return out
@@ -59,6 +60,7 @@ class NPSocket():
             receiving_buffer = self.client_connection.recv(8)
             if not receiving_buffer: break
             data += receiving_buffer
+            print('debug')
         out = int(data.decode('utf8'))
         print(f'Int Received in {(time.time() - start_time) * 1000} ms')
         return out

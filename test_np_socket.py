@@ -1,7 +1,7 @@
 import sys
 import argparse
 import numpy as np
-from np_socket import NPSocket
+from np_socket import GameSocket
 
 '''
 Test Code for NPSocket Class
@@ -15,28 +15,28 @@ parser.add_argument('--port', type=int, help='Socket Port', dest='port')
 
 FLAGS = parser.parse_args()
 
-np_socket = NPSocket()
+gsocket = GameSocket()
                     
 if FLAGS.server:
-    np_socket.start_server(FLAGS.port)
+    gsocket.start_server(FLAGS.port)
     
-    num = np_socket.server_receive_int()
+    num = gsocket.server_receive_int()
     print(num)
     
-    #data = np.zeros((5,5))
-    #np_socket.server_send_arr(data)
+    data = np.zeros((5,5))
+    gsocket.server_send_arr(data)
     
-    np_socket.close_server()
+    gsocket.close_server()
     
 else:
-    np_socket.start_client(FLAGS.server_address, FLAGS.port)
+    gsocket.start_client(FLAGS.server_address, FLAGS.port)
     
     num = 2
-    np_socket.client_send_int(num)
+    gsocket.client_send_int(num)
     
-    #data = np_socket.client_receive_arr()
+    data = gsocket.client_receive_arr()
     
-    #print(data)
-    np_socket.close_client()
+    print(data)
+    gsocket.close_client()
 
 sys.exit()

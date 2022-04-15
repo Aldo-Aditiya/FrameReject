@@ -24,13 +24,16 @@ FLAGS = parser.parse_args()
 
 # Threaded Input Functions
 class ServerInputReceiver(Thread):
-    def __init__(self, q, rcv_socket):
+    def __init__(self, q, input_port):
         Thread.__init__(self)
         self.daemon = True
         self._stop_event = threading.Event()
         self.start()
     
     def run(self):
+        rcv_socket = GameSocket()
+        rcv_socket.start_server(input_port)
+        
         while not self.stopped():
             print("--thread")
             num = rcv_socket.server_receive_int()
@@ -43,13 +46,16 @@ class ServerInputReceiver(Thread):
         return self._stop_event.is_set()
 
 class ClientInputSender(Thread):
-    def __init__(self, send_socket):
+    def __init__(self, server_address, input_port):
         Thread.__init__(self)
         self.daemon = True
         self._stop_event = threading.Event()
         self.start()
 
     def run(self):
+        send_socket = GameSocket()
+        send_socket.start_client(server_address, input_port)
+        
         while not self.stopped():
             num = 2
             print("--thread")
@@ -74,12 +80,10 @@ q = Queue()
 i = 0
 if FLAGS.server:
     
+    t_sr = ServerInputReceiver(q, FLAGS.input_port)
+    
     main_socket = GameSocket()
     main_socket.start_server(FLAGS.main_port)
-    
-    rcv_socket = GameSocket()
-    rcv_socket.start_server(FLAGS.input_port)
-    t_sr = ServerInputReceiver(q, rcv_socket)
     
     while (i <= 10):
         i += 1
@@ -94,12 +98,10 @@ if FLAGS.server:
     
 else:
     
+    t_cs = ClientInputSender(FLAGS.server_address, FLAGS.input_port)
+    
     main_socket = GameSocket()
     main_socket.start_client(FLAGS.server_address, FLAGS.main_port)
-    
-    send_socket = GameSocket()
-    send_socket.start_client(FLAGS.server_address, FLAGS.input_port)
-    t_cs = ClientInputSender(send_socket)
     
     while(i <= 10):
         i += 1

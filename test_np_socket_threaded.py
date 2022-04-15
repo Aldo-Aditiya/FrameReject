@@ -31,6 +31,7 @@ class ServerInputReceiver(Thread):
     
     def run(self):
         while not self.stopped():
+            print("--thread")
             num = rcv_socket.server_receive_int()
             q.put(num)
         
@@ -51,6 +52,7 @@ class ClientInputSender(Thread):
         while not self.stopped():
             num = 2
             time.sleep(1)
+            print("--thread")
             send_socket.client_send_int(num)
         
     def stop(self):

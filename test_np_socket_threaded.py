@@ -2,6 +2,7 @@ import sys
 import argparse
 from queue import Queue
 import threading
+import time
 from threading import Thread
 
 import numpy as np
@@ -49,7 +50,7 @@ class ClientInputSender(Thread):
     def run(self):
         while not self.stopped():
             num = 2
-            sleep(1)
+            time.sleep(1)
             send_socket.client_send_int(num)
         
     def stop(self):
@@ -80,6 +81,7 @@ if FLAGS.server:
     while (i <= 10):
         i += 1
         server_loop(main_socket)
+        time.sleep(0.5)
     
     print(q)
     

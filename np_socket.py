@@ -16,7 +16,7 @@ class GameSocket():
     def start_server(self, port):
         self.server_socket = socket.socket() 
         self.server_socket.bind(('0.0.0.0', port))
-        self.server_socket.listen(1)
+        self.server_socket.listen(5)
         
         print('Waiting for a connection...')
         self.client_connection, client_address = self.server_socket.accept()
@@ -63,7 +63,6 @@ class GameSocket():
             receiving_buffer = self.client_connection.recv(8)
             if not receiving_buffer: break
             data += receiving_buffer
-            print('debug')
         out = int(data.decode('utf8'))
         print(f'Int Received in {(time.time() - start_time) * 1000} ms')
         return out

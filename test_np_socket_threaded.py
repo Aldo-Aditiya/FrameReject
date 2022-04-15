@@ -28,16 +28,18 @@ class ServerInputReceiver(Thread):
         Thread.__init__(self)
         self.daemon = True
         self._stop_event = threading.Event()
+        self.q = q
+        self.input_port = input_port
         self.start()
     
     def run(self):
         rcv_socket = GameSocket()
-        rcv_socket.start_server(input_port)
+        rcv_socket.start_server(self.input_port)
         
         while not self.stopped():
             print("--thread")
             num = rcv_socket.server_receive_int()
-            q.put(num)
+            self.q.put(num)
         
     def stop(self):
         self._stop_event.set()
@@ -50,11 +52,13 @@ class ClientInputSender(Thread):
         Thread.__init__(self)
         self.daemon = True
         self._stop_event = threading.Event()
+        self.input_port = input_port
+        self.server_address = server_address
         self.start()
 
     def run(self):
         send_socket = GameSocket()
-        send_socket.start_client(server_address, input_port)
+        send_socket.start_client(self.server_address, self.input_port)
         
         while not self.stopped():
             num = 2

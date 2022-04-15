@@ -59,10 +59,10 @@ class GameSocket():
         print('Receiving Int...')
         start_time = time.time()
         data = b''
-        while True:
-            receiving_buffer = self.client_connection.recv(8)
-            if not receiving_buffer: break
-            data += receiving_buffer
+        
+        receiving_buffer = self.client_connection.recv(1)
+        data += receiving_buffer
+        
         out = int(data.decode('utf8'))
         print(f'Int Received in {(time.time() - start_time) * 1000} ms')
         return out

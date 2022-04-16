@@ -33,8 +33,11 @@ class ClientFrameReceiver(Thread):
         self.cl_socket.start_client(self.server_address, self.input_port)
         
         while not self.stopped():
-            data = self.cl_socket.client_receive_arr()
-            self.q.put(data)
+            try:
+                data = self.cl_socket.client_receive_arr()
+                self.q.put(data)
+            except:
+                pass
         
     def stop(self):
         self._stop_event.set()
@@ -82,7 +85,7 @@ while not is_game_over:
         time_frame.append(time.time() - frame_starttime)
         frame_starttime = time.time()
 
-        # Send Last Keypress
+        # Send Last Keypress and reset
         main_socket.client_send_int(keypress)
         keypress = 0
 

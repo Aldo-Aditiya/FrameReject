@@ -18,7 +18,7 @@ parser.add_argument('--input_port', type=int, help='Socket Port for Input Loop',
 FLAGS = parser.parse_args()
 
 # Threaded Input Function
-class ClientInputSender(Thread):
+class ClientFrameReceiver(Thread):
     def __init__(self, q, server_address, input_port):
         Thread.__init__(self)
         self.daemon = True
@@ -29,19 +29,16 @@ class ClientInputSender(Thread):
         self.start()
 
     def run(self):
-        self.send_socket = GameClientSocket()
-        self.send_socket.start_client(self.server_address, self.input_port)
+        self.cl_socket = GameClientSocket()
+        self.cl_socket.start_client(self.server_address, self.input_port)
         
         while not self.stopped():
-            if q.empty():
-                pass
-            else:
-                num = q.get()
-                self.send_socket.client_send_int(num)
+            data = self.cl_socket.client_receive_arr()
+            self.q.put(data)
         
     def stop(self):
         self._stop_event.set()
-        self.send_socket.close_client()
+        self.cl_socket.close_client()
         
     def stopped(self):
         return self._stop_event.is_set()   
@@ -66,40 +63,49 @@ screen = pygame.display.set_mode((160, 210))
 
 # Initialize Socket
 q = Queue()
-t_cs = ClientInputSender(q, FLAGS.server_address, FLAGS.input_port)
+t_cfr = ClientFrameReceiver(q, FLAGS.server_address, FLAGS.input_port)
 main_socket = GameClientSocket()
 main_socket.start_client(FLAGS.server_address, FLAGS.main_port)
 
 # Main Loop
 is_game_over = False
+frame_time = 1 / 60
 time_frame = []
+keypress = 0
 
+frame_starttime = time.time()
 while not is_game_over:
-    start_time = time.time()
+    # Get Player Keypress
+    if keypress== 0: keypress = get_pygame_keypress()
 
-    # Get Player Keypress and send through a separate thread
-    num = get_pygame_keypress()
-    if num != 0: q.put(num)
+    if ((time.time() - frame_starttime) >= frame_time):
+        time_frame.append(time.time() - frame_starttime)
+        frame_starttime = time.time()
 
-    # Request Frames
-    main_socket.client_send_int(1)
+        # Send Last Keypress
+        main_socket.client_send_int(keypress)
+        keypress = 0
 
-    # Receive Frames
-    data = main_socket.client_receive_arr()
+        if q.empty():
+            # If frame queue is empty, no need to process the current tick
+            pass
+        else:
+            # Get Frame Data from Queue
+            data = q.get()
 
-    # Check if Game Over (based on the shape of our data)
-    # TODO - Can be made better
-    if (data.shape[0] != 160):
-        is_game_over = True
-        break
+            # Check if Loop Over (based on the shape of our data)
+            # TODO - Can be made better
+            if (data.shape[0] != 160):
+                is_game_over = True
+                break
+            
+            # Display Frame
+            frame = pygame.surfarray.make_surface(data)
+            screen.blit(frame, (0, 0))
+            pygame.display.update()
 
-    frame = pygame.surfarray.make_surface(data)
-    screen.blit(frame, (0, 0))
-    pygame.display.update()
-
-    time_frame.append(time.time() - start_time)
-
-t_cs.stop()
+t_cfr.stop()
+main_socket.close_client()
 
 mean_time_frame = np.mean(np.array(time_frame))
 print("\nClient End to End Process: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")

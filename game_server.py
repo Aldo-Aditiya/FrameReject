@@ -17,7 +17,7 @@ parser.add_argument('--input_port', type=int, help='Socket Port for Input Loop',
 FLAGS = parser.parse_args()
 
 # Threaded Input Functions
-class ServerInputReceiver(Thread):
+class ServerFrameSender(Thread):
     def __init__(self, q, input_port):
         Thread.__init__(self)
         self.daemon = True
@@ -27,16 +27,19 @@ class ServerInputReceiver(Thread):
         self.start()
     
     def run(self):
-        self.rcv_socket = GameServerSocket()
-        self.rcv_socket.start_server(self.input_port)
+        self.s_socket = GameServerSocket()
+        self.s_socket.start_server(self.input_port)
         
         while not self.stopped():
-            num = self.rcv_socket.server_receive_int()
-            self.q.put(num)
+            if self.q.empty():
+                pass
+            else:
+                arr = self.q.get()
+                self.s_socket.server_send_arr(arr)
         
     def stop(self):
         self._stop_event.set()
-        self.rcv_socket.close_server()
+        self.s_socket.close_server()
         
     def stopped(self):
         return self._stop_event.is_set()
@@ -67,7 +70,7 @@ ale.getScreen(screen_data)
 
 # Initialize Socket
 q = Queue()
-t_sr = ServerInputReceiver(q, FLAGS.input_port)
+t_sr = ServerFrameSender(q, FLAGS.input_port)
 main_socket = GameServerSocket()
 main_socket.start_server(FLAGS.main_port)
 
@@ -80,15 +83,9 @@ while (episode < 1):
     while not ale.game_over():
         start_time = time.time()
 
-        # Wait for Frame Request
-        _ = main_socket.server_receive_int()
-        
-        # Read Event from Game Client
-        if q.empty():
-            a = minimal_actions[0]
-        else:
-            keypress = q.get()
-            a = minimal_actions[keypress]
+        # Wait for Client Input
+        keypress = main_socket.server_receive_int()
+        a = minimal_actions[keypress]
         
         # ALE Act
         reward = ale.act(a);
@@ -98,16 +95,18 @@ while (episode < 1):
         frame = np.flip(np.rot90(frame), axis=0)
         
         # Send Frames
-        main_socket.server_send_arr(frame)
+        q.put(frame)
 
         time_frame.append(time.time() - start_time)
         
     episode += 1
     ale.reset_game() 
 
-# Indicate Game Over with a Zero np Array
+# Indicate Loop Over with a Zero np Array
 # TODO - Can be made better
-main_socket.server_send_arr(np.zeros((5,5)))
+q.put(np.zeros((5,5)))
+
+time.sleep(1)
 
 t_sr.stop()
 main_socket.close_server()

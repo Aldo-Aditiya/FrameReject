@@ -2,7 +2,8 @@ import socket
 import numpy as np
 import pickle
 import time
-import struct
+from struct import pack, unpack
+import io
 
 class GameSocket():
     '''
@@ -15,6 +16,7 @@ class GameSocket():
 
     def start_server(self, port):
         self.server_socket = socket.socket() 
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind(('0.0.0.0', port))
         self.server_socket.listen(5)
         
@@ -24,6 +26,7 @@ class GameSocket():
 
     def start_client(self, server_address, port):
         self.client_socket = socket.socket()
+        self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             self.client_socket.connect((server_address, port))
             print(f'Connected to {server_address} on port {port} \n')
@@ -36,8 +39,15 @@ class GameSocket():
         '''
         print('Sending Arr...')
         start_time = time.time()
-        serialized = pickle.dumps(arr, protocol=2)
-        self.client_connection.send(serialized)
+        com_arr = self.encode_arr(arr)
+        com_arr.seek(0)
+
+        # Sending Array Size
+        self.client_connection.send(pack('>H', len(com_arr.read())))
+
+        # Sending Array
+        com_arr.seek(0)
+        self.client_connection.send(com_arr.read())
         print(f'Arr Sent in {(time.time() - start_time) * 1000} ms')
         
     def client_receive_arr(self):
@@ -46,14 +56,33 @@ class GameSocket():
         '''
         print('Receiving Arr...')
         start_time = time.time()
-        data = b''
-        while True:
-            receiving_buffer = self.client_socket.recv(1024)
-            if not receiving_buffer: break
-            data += receiving_buffer
-        out = pickle.loads(data)
+
+        # Receive Array Size
+        receiving_size = unpack('>H', self.client_socket.recv(2))[0]
+
+        # Receive Array
+        data = self.client_socket.recv(receiving_size)
+        
+        out = self.decode_arr(data)
         print(f'Arr Received in {(time.time() - start_time) * 1000} ms')
         return out
+    
+    def encode_arr(self, arr):
+        '''
+        Encode delimited array before sending
+        '''
+        com_arr = io.BytesIO()
+        np.savez_compressed(com_arr, arr)
+        
+        return com_arr
+        
+    def decode_arr(self, msg):
+        '''
+        Decode array after received
+        '''
+        decom_arr = np.load(io.BytesIO(msg))['arr_0']
+        
+        return decom_arr
     
     def client_send_int(self, num):
         '''

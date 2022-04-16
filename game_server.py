@@ -79,6 +79,9 @@ while (episode < 1):
     print(f"\nEpisode: {episode}")
     while not ale.game_over():
         start_time = time.time()
+
+        # Wait for Frame Request
+        _ = main_socket.server_receive_int()
         
         # Read Event from Game Client
         if q.empty():
@@ -94,6 +97,7 @@ while (episode < 1):
         frame = ale.getScreenRGB()
         frame = np.flip(np.rot90(frame), axis=0)
         
+        # Send Frames
         main_socket.server_send_arr(frame)
 
         time_frame.append(time.time() - start_time)
@@ -103,7 +107,7 @@ while (episode < 1):
 
 # Indicate Game Over with a Zero np Array
 # TODO - Can be made better
-main_socket.server_send_arr(np.zeros(5,5))
+main_socket.server_send_arr(np.zeros((5,5)))
 
 t_sr.stop()
 main_socket.close_server()

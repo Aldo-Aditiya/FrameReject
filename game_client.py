@@ -81,10 +81,13 @@ while not is_game_over:
     num = get_pygame_keypress()
     if num != 0: q.put(num)
 
+    # Request Frames
+    main_socket.client_send_int(1)
+
     # Receive Frames
     data = main_socket.client_receive_arr()
 
-    # Check if Game Over (based on the length of frame array)
+    # Check if Game Over (based on the shape of our data)
     # TODO - Can be made better
     if (data.shape[0] != 160):
         is_game_over = True

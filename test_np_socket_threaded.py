@@ -7,10 +7,10 @@ from threading import Thread
 
 import numpy as np
 
-from np_socket import GameSocket
+from game_socket import GameServerSocket, GameClientSocket
 
 '''
-Test Code for GameSocket Class
+Threaded Test Code for GameServerSocket, GameClientSocket Classes
 '''
 
 parser = argparse.ArgumentParser(description='')
@@ -19,8 +19,18 @@ parser.add_argument('-s', help='Call if Server', action='store_true', dest='serv
 parser.add_argument('--server_address', type=str, help='Server IP Address', dest='server_address')
 parser.add_argument('--main_port', type=int, help='Socket Port for Main Loop', dest='main_port')
 parser.add_argument('--input_port', type=int, help='Socket Port for Input Loop', dest='input_port')
+parser.add_argument('--test_multi', help='Test Multiple iterations of the process', action='store_true',dest='test_multi')
 
 FLAGS = parser.parse_args()
+
+if FLAGS.test_multi:
+    itr = 10
+else:
+    itr = 1
+
+test_num = 2
+input_send_delay = 0.5
+frame_send_delay = 1
 
 # Threaded Input Functions
 class ServerInputReceiver(Thread):
@@ -33,16 +43,18 @@ class ServerInputReceiver(Thread):
         self.start()
     
     def run(self):
-        rcv_socket = GameSocket()
-        rcv_socket.start_server(self.input_port)
+        self.rcv_socket = GameServerSocket()
+        self.rcv_socket.start_server(self.input_port)
         
         while not self.stopped():
             print("--thread")
-            num = rcv_socket.server_receive_int()
+            num = self.rcv_socket.server_receive_int()
+            print(f'Data Received same as Data sent? {num == test_num}')
             self.q.put(num)
         
     def stop(self):
         self._stop_event.set()
+        self.rcv_socket.close_server()
         
     def stopped(self):
         return self._stop_event.is_set()
@@ -57,28 +69,29 @@ class ClientInputSender(Thread):
         self.start()
 
     def run(self):
-        send_socket = GameSocket()
-        send_socket.start_client(self.server_address, self.input_port)
+        self.send_socket = GameClientSocket()
+        self.send_socket.start_client(self.server_address, self.input_port)
         
         while not self.stopped():
-            num = 2
+            num = test_num
+            time.sleep(input_send_delay)
             print("--thread")
-            send_socket.client_send_int(num)
-            time.sleep(1)
+            self.send_socket.client_send_int(num)
         
     def stop(self):
         self._stop_event.set()
+        self.send_socket.close_client()
         
     def stopped(self):
         return self._stop_event.is_set()    
 
 # Main Loop Functions
-def server_loop(main_socket):
-    data = np.zeros((5,5))
+def server_loop(data, main_socket):
     main_socket.server_send_arr(data)    
 
 def client_loop(main_socket):
     data = main_socket.client_receive_arr()
+    return data
 
 q = Queue()
 i = 0
@@ -86,34 +99,33 @@ if FLAGS.server:
     
     t_sr = ServerInputReceiver(q, FLAGS.input_port)
     
-    main_socket = GameSocket()
+    main_socket = GameServerSocket()
     main_socket.start_server(FLAGS.main_port)
+    data = np.load('test_frame.npz')['arr_0']
     
-    while (i <= 10):
-        i += 1
-        server_loop(main_socket)
-        time.sleep(0.5)
+    for _ in range(itr):
+        server_loop(data, main_socket)
+        time.sleep(frame_send_delay)
+        print("")
     
-    print(list(q.queue))
+    print(f'Length of Queue {len(list(q.queue))}')
     
     t_sr.stop()
-    rcv_socket.close_server()
     main_socket.close_server()
     
 else:
     
     t_cs = ClientInputSender(FLAGS.server_address, FLAGS.input_port)
     
-    main_socket = GameSocket()
+    main_socket = GameClientSocket()
     main_socket.start_client(FLAGS.server_address, FLAGS.main_port)
     
-    while(i <= 10):
-        i += 1
-        
-        client_loop(main_socket)
+    for _ in range(itr):
+        data = client_loop(main_socket)
+        print(f'Data Received same as Data sent? {np.array_equal(data, np.load("test_frame.npz")["arr_0"])}')
+        print("")
     
     t_cs.stop()
-    send_socket.close_server()
-    main_socket.close_server()
+    main_socket.close_client()
         
 sys.exit()

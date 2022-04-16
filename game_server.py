@@ -35,7 +35,7 @@ class ServerFrameSender(Thread):
                 pass
             else:
                 arr = self.q.get()
-                self.s_socket.server_send_arr(arr)
+                self.s_socket.server_send_arr(arr, encode=False)
         
     def stop(self):
         self._stop_event.set()
@@ -77,7 +77,7 @@ main_socket.start_server(FLAGS.main_port)
 # Main Game Loop
 episode = 0
 time_frame = []
-
+i = 0
 while (episode < 1):
     print(f"\nEpisode: {episode}")
     while not ale.game_over():
@@ -86,25 +86,27 @@ while (episode < 1):
         # Wait for Client Input
         keypress = main_socket.server_receive_int()
         a = minimal_actions[keypress]
-        
+
         # ALE Act
         reward = ale.act(a);
         
         # Frame Generation
         frame = ale.getScreenRGB()
         frame = np.flip(np.rot90(frame), axis=0)
+        frame = main_socket.encode_arr(frame)
         
         # Send Frames
         q.put(frame)
 
         time_frame.append(time.time() - start_time)
-        
+
     episode += 1
     ale.reset_game() 
 
 # Indicate Loop Over with a Zero np Array
 # TODO - Can be made better
-q.put(np.zeros((5,5)))
+loop_over = main_socket.encode_arr(np.zeros((5,5)))
+q.put(loop_over)
 
 time.sleep(1)
 

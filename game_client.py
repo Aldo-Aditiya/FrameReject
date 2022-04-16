@@ -34,7 +34,7 @@ class ClientFrameReceiver(Thread):
         
         while not self.stopped():
             try:
-                data = self.cl_socket.client_receive_arr()
+                data = self.cl_socket.client_receive_arr(decode=False)
                 self.q.put(data)
             except:
                 pass
@@ -77,9 +77,10 @@ time_frame = []
 keypress = 0
 
 frame_starttime = time.time()
+i = 0
 while not is_game_over:
     # Get Player Keypress
-    if keypress== 0: keypress = get_pygame_keypress()
+    if keypress == 0: keypress = get_pygame_keypress()
 
     if ((time.time() - frame_starttime) >= frame_time):
         time_frame.append(time.time() - frame_starttime)
@@ -95,6 +96,7 @@ while not is_game_over:
         else:
             # Get Frame Data from Queue
             data = q.get()
+            data = main_socket.decode_arr(data)
 
             # Check if Loop Over (based on the shape of our data)
             # TODO - Can be made better

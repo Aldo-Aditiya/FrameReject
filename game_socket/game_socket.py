@@ -18,13 +18,16 @@ class GameServerSocket():
         self.client_connection, client_address = self.server_socket.accept()
         print(f'Connected to {client_address[0]} \n')
 
-    def server_send_arr(self, arr):
+    def server_send_arr(self, arr, encode=True):
         '''
         Sending frames as np array from Server to Client
         '''
-        print('Sending Arr...')
+        #print('Sending Arr...')
         start_time = time.time()
-        com_arr = self.encode_arr(arr)
+        if encode:
+            com_arr = self.encode_arr(arr)
+        else:
+            com_arr = arr
         com_arr.seek(0)
 
         # Sending Array Size
@@ -33,7 +36,8 @@ class GameServerSocket():
         # Sending Array
         com_arr.seek(0)
         self.client_connection.send(com_arr.read())
-        print(f'Arr Sent in {(time.time() - start_time) * 1000} ms')
+        #print(f'Arr Sent in {(time.time() - start_time) * 1000} ms')
+        pass
 
     def encode_arr(self, arr):
         '''
@@ -48,7 +52,7 @@ class GameServerSocket():
         '''
         Receiving input as int from Server
         '''
-        print('Receiving Int...')
+        #print('Receiving Int...')
         start_time = time.time()
         
         # Receive Int Size
@@ -58,7 +62,7 @@ class GameServerSocket():
         data = self.client_connection.recv(receiving_size)
         
         out = int(data.decode('utf8'))
-        print(f'Int Received in {(time.time() - start_time) * 1000} ms')
+        #print(f'Int Received in {(time.time() - start_time) * 1000} ms')
         return out
 
     def close_server(self):
@@ -78,21 +82,22 @@ class GameClientSocket():
         except socket.error:
             print(f'Connection to {server_address} on port {port} failed: {socket.error} \n')
 
-    def client_receive_arr(self):
+    def client_receive_arr(self, decode=True):
         '''
         Receiving frames as np array from Server
         '''
-        print('Receiving Arr...')
+        #print('Receiving Arr...')
         start_time = time.time()
 
         # Receive Array Size
         receiving_size = unpack('>H', self.client_socket.recv(2))[0]
 
         # Receive Array
-        data = self.client_socket.recv(receiving_size)
+        out = self.client_socket.recv(receiving_size)
         
-        out = self.decode_arr(data)
-        print(f'Arr Received in {(time.time() - start_time) * 1000} ms')
+        if decode:
+            out = self.decode_arr(out)
+        #print(f'Arr Received in {(time.time() - start_time) * 1000} ms')
         return out
 
     def decode_arr(self, msg):
@@ -107,7 +112,7 @@ class GameClientSocket():
         '''
         Sending input as int from Client to Server
         '''
-        print('Sending Int...')
+        #print('Sending Int...')
         start_time = time.time()
         
         num_bytes = str(num).encode('utf8')
@@ -118,7 +123,8 @@ class GameClientSocket():
         # Sending Int
         self.client_socket.sendall(num_bytes)
 
-        print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
+        #print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
+        pass
 
     def close_client(self):
         self.client_socket.shutdown(1)

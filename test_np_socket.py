@@ -1,7 +1,7 @@
 import sys
 import argparse
 import numpy as np
-from np_socket import GameSocket
+from np_socket import GameServerSocket, GameClientSocket
 
 '''
 Test Code for GameSocket Class
@@ -16,8 +16,6 @@ parser.add_argument('--test_multi', help='Test Multiple iterations of the proces
 
 FLAGS = parser.parse_args()
 
-gsocket = GameSocket()
-
 if FLAGS.test_multi:
     itr = 10
 else:
@@ -26,6 +24,7 @@ else:
 test_num = 2
 
 if FLAGS.server:
+    gsocket = GameServerSocket()
     gsocket.start_server(FLAGS.port)
     for _ in range(itr):
         num = gsocket.server_receive_int()
@@ -38,6 +37,7 @@ if FLAGS.server:
     gsocket.close_server()
     
 else:
+    gsocket = GameClientSocket()
     gsocket.start_client(FLAGS.server_address, FLAGS.port)
     for _ in range(itr):
         gsocket.client_send_int(test_num)

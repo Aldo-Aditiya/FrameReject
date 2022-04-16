@@ -113,5 +113,5 @@ t_sr.stop()
 main_socket.close_server()
     
 mean_time_frame = np.mean(np.array(time_frame))
-print("Server End to End Process: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")
+print("\nServer End to End Process: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")
 

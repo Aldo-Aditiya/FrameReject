@@ -100,7 +100,6 @@ while not is_game_over:
     time_frame.append(time.time() - start_time)
 
 t_cs.stop()
-main_socket.close_client()
 
 mean_time_frame = np.mean(np.array(time_frame))
-print("Client End to End Process: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")
+print("\nClient End to End Process: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")

@@ -28,7 +28,7 @@ if FLAGS.server:
     gsocket.start_server(FLAGS.port)
     for _ in range(itr):
         num = gsocket.server_receive_int()
-        print(f'Data Received same as Data sent? {test_num == 2}')
+        print(f'Data Received same as Data sent? {num == test_num}')
 
         data = np.load('test_frame.npz')['arr_0']
         gsocket.server_send_arr(data)

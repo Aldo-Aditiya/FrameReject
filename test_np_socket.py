@@ -1,10 +1,10 @@
 import sys
 import argparse
 import numpy as np
-from np_socket import GameServerSocket, GameClientSocket
+from game_socket import GameServerSocket, GameClientSocket
 
 '''
-Test Code for GameSocket Class
+Non-Threaded Test Code for GameServerSocket, GameClientSocket Classes
 '''
 
 parser = argparse.ArgumentParser(description='')

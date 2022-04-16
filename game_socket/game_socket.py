@@ -50,10 +50,12 @@ class GameServerSocket():
         '''
         print('Receiving Int...')
         start_time = time.time()
-        data = b''
         
-        receiving_buffer = self.client_connection.recv(1)
-        data += receiving_buffer
+        # Receive Int Size
+        receiving_size = unpack('>H', self.client_connection.recv(2))[0]
+
+        # Receive Int
+        data = self.client_connection.recv(receiving_size)
         
         out = int(data.decode('utf8'))
         print(f'Int Received in {(time.time() - start_time) * 1000} ms')
@@ -107,7 +109,15 @@ class GameClientSocket():
         '''
         print('Sending Int...')
         start_time = time.time()
-        self.client_socket.sendall(str(num).encode('utf8'))
+        
+        num_bytes = str(num).encode('utf8')
+
+        # Sending Int Size
+        self.client_socket.sendall(pack('>H', len(num_bytes)))
+
+        # Sending Int
+        self.client_socket.sendall(num_bytes)
+
         print(f'Int Sent in {(time.time() - start_time) * 1000} ms')
 
     def close_client(self):

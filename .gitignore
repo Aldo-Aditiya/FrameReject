@@ -10,3 +10,5 @@ __pycache__/np_socket.cpython-39.pyc
 .ipynb_checkpoints/test_np_socket-checkpoint.py
 ale_pygame_test/.ipynb_checkpoints/pygame_ale_delayed-checkpoint.py
 .ipynb_checkpoints/test_np_socket_threaded-checkpoint.py
+ale_pygame_test/.ipynb_checkpoints/ale_tryout-checkpoint.ipynb
+.DS_Store

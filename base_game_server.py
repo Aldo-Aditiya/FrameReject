@@ -12,17 +12,22 @@ parser = argparse.ArgumentParser(description='')
 
 parser.add_argument('--main_port', type=int, help='Socket Port for Main Loop', dest='main_port')
 parser.add_argument('--input_port', type=int, help='Socket Port for Input Loop', dest='input_port')
+parser.add_argument('--profiling', help='If True, prints profiling of code components - also randomizes inputs', 
+                    action='store_true', dest='profiling')
 
 FLAGS = parser.parse_args()
 
 # Threaded Input Functions
 class ServerFrameSender(Process):
-    def __init__(self, q, input_port):
+    def __init__(self, q, time_q, input_port):
         Process.__init__(self)
         self.daemon = True
         self.stopped = False
-        self.q = q
+        
         self.input_port = input_port
+
+        self.q = q
+        self.time_q = time_q
     
     def run(self):
         self.s_socket = GameServerSocket()
@@ -32,14 +37,32 @@ class ServerFrameSender(Process):
             if self.q.empty():
                 pass
             else:
+                frame_process_starttime = time.time()
+
                 arr = self.q.get()
                 self.s_socket.server_send_arr(arr, encode=False)
+
+                self.time_q.put(time.time() - frame_process_starttime)
         
     def stop(self):
         self.stopped = True
         #self.s_socket.close_server()
         self.join()
         self.close()
+
+def dump_time_queue_server(time_q):
+    """
+    Returns items from time queue into two separate lists.
+    """
+    result_nodelay = []
+
+    time_q.put('STOP')
+
+    for i in iter(time_q.get, 'STOP'):
+        result_nodelay.append(i)
+    time.sleep(0.01)
+
+    return result_nodelay
 
 if __name__ == "__main__":
     # ALE Interface Initialization
@@ -68,14 +91,20 @@ if __name__ == "__main__":
 
     # Initialize Socket
     q = Queue()
+    time_q = Queue()
     main_socket = GameServerSocket()
     main_socket.start_server(FLAGS.main_port)
-    p_sfs = ServerFrameSender(q, FLAGS.input_port)
+    p_sfs = ServerFrameSender(q, time_q, FLAGS.input_port)
 
     # Main Game Loop
     p_sfs.start()
     episode = 0
-    time_frame = []
+
+    frame_times = []
+    rcv_int_times = []
+    ale_act_times = []
+    gen_frame_times = []
+    encode_times = []
 
     keypress = 0
     while (episode < 1):
@@ -84,24 +113,39 @@ if __name__ == "__main__":
             start_time = time.time()
 
             # Wait for Client Input
+            rcv_int_starttime = time.time()
             try:
                 keypress = main_socket.server_receive_int()
             except:
                 pass
-            a = minimal_actions[keypress]
+            
+            # Randomizes input if in profiling mode
+            if not FLAGS.profiling:
+                a = minimal_actions[keypress]
+            else:
+                a = minimal_actions[np.random.randint(len(minimal_actions))]
+            rcv_int_times.append(time.time() - rcv_int_starttime)
 
             # ALE Act
+            ale_act_starttime = time.time()
             reward = ale.act(a);
+            ale_act_times.append(time.time() - ale_act_starttime)
             
             # Frame Generation
+            gen_frame_starttime = time.time()
             frame = ale.getScreenRGB()
             frame = np.flip(np.rot90(frame), axis=0)
+            gen_frame_times.append(time.time() - gen_frame_starttime)
+
+            # Encode Frame
+            encode_starttime = time.time()
             frame = main_socket.encode_arr(frame)
+            encode_times.append(time.time() - encode_starttime)
             
             # Send Frames
             q.put(frame)
 
-            time_frame.append(time.time() - start_time)
+            frame_times.append(time.time() - start_time)
 
         episode += 1
         ale.reset_game() 
@@ -112,8 +156,23 @@ if __name__ == "__main__":
     q.put(loop_over)
 
     time.sleep(1)
-
     main_socket.close_server()
-        
-    mean_time_frame = np.mean(np.array(time_frame))
-    print("\nServer End to End Process: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")
+    
+    if FLAGS.profiling:
+        mean_time_frame = np.mean(np.array(frame_times))
+        print("\nServer End to End Process: " + str(mean_time_frame) + " s, or " + str(1/mean_time_frame) + " FPS \n")
+
+        mean_time_frame = np.mean(np.array(rcv_int_times))
+        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        mean_time_frame = np.mean(np.array(ale_act_times))
+        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        mean_time_frame = np.mean(np.array(gen_frame_times))
+        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        mean_time_frame = np.mean(np.array(encode_times))
+        print("Keypress Process           : " + str(mean_time_frame) + " s")
+
+        print("\n")
+
+        nodelay_times = dump_time_queue_server(time_q)
+        mean_time_frame = np.mean(np.array(nodelay_times))
+        print("Frame Send Process         : " + str(mean_time_frame) + " s")

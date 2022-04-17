@@ -77,7 +77,7 @@ time_frame = []
 keypress = 0
 
 frame_starttime = time.time()
-i = 0
+
 while not is_game_over:
     # Get Player Keypress
     if keypress == 0: keypress = get_pygame_keypress()

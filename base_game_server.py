@@ -49,7 +49,7 @@ ale = ALEInterface()
 ale.setInt("random_seed", 42)
 ale.setFloat("repeat_action_probability", 0)
 
-rom_file = "/Users/aldo/workspace/202201_cs5340/_project/_rom/breakout.bin"
+rom_file = "./rom/breakout.bin"
 ale.loadROM(rom_file)
 
 minimal_actions = ale.getMinimalActionSet()
@@ -77,7 +77,7 @@ main_socket.start_server(FLAGS.main_port)
 # Main Game Loop
 episode = 0
 time_frame = []
-i = 0
+
 while (episode < 1):
     print(f"\nEpisode: {episode}")
     while not ale.game_over():
@@ -115,4 +115,3 @@ main_socket.close_server()
     
 mean_time_frame = np.mean(np.array(time_frame))
 print("\nServer End to End Process: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")
-

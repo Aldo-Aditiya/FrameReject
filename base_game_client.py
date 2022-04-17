@@ -46,7 +46,13 @@ class ClientFrameReceiver(Process):
                 cl_rcv_time = time.time() - frame_process_starttime
                 frame_process_time_items.append(cl_rcv_time)
 
-                time.sleep(0)
+                # Make sure frame delay is always constant
+                if cl_rcv_time >= (FLAGS.frame_delay_ms / 1000):
+                    sleep_time = 0
+                else: 
+                    sleep_time = cl_rcv_time - (FLAGS.frame_delay_ms / 1000)
+
+                time.sleep(sleep_time)
                 frame_process_time_items.append(time.time() - frame_process_starttime)
 
                 self.time_q.put(frame_process_time_items)

@@ -40,16 +40,18 @@ class ServerFrameSender(Process):
             else:
                 frame_process_time_items = []
                 frame_process_starttime = time.time()
+
                 arr = self.q.get()
                 self.s_socket.server_send_arr(arr, encode=False)
                 send_time = time.time() - frame_process_starttime
+
                 frame_process_time_items.append(send_time)
 
                 # Make sure frame delay is always constant
                 if send_time >= (FLAGS.frame_delay_ms / 1000):
                     sleep_time = 0
                 else: 
-                    sleep_time = (FLAGS.frame_delay_ms / 1000) - send_time
+                    sleep_time = send_time - (FLAGS.frame_delay_ms / 1000)
 
                 time.sleep(sleep_time)
                 frame_process_time_items.append(time.time() - frame_process_starttime)

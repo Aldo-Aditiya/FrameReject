@@ -4,11 +4,12 @@ CS5340 2022 Project.
 ## Game Client/Server
 ### How it Works
 ![Game Loop](./imgs/game_loop.png)
+
 The Game Client/Server interaction is implemented as above. Client will receive user input at every time step, and consequently send the request for frames to the Server. Once Server sends the frames and Client receives it, showing the frames to the player will be done at the nearest timestep from when the frames arrive.
 
 ### Requirements
-- `pip install pygame`
-- `pip install ale_py`
+- pygame `pip install pygame`
+- ale_py `pip install ale_py`
 
 ### Using the Game Client/Server
 Example Server Command (Run this first)

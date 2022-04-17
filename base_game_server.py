@@ -160,19 +160,20 @@ if __name__ == "__main__":
     
     if FLAGS.profiling:
         mean_time_frame = np.mean(np.array(frame_times))
-        print("\nServer End to End Process: " + str(mean_time_frame) + " s, or " + str(1/mean_time_frame) + " FPS \n")
+        print("\n")
+        print("Server End to End Process  : " + str(mean_time_frame * 1000) + " ms, or " + str(1/mean_time_frame) + " FPS \n")
 
         mean_time_frame = np.mean(np.array(rcv_int_times))
-        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        print("Receive Input Process      : " + str(mean_time_frame * 1000) + " ms")
         mean_time_frame = np.mean(np.array(ale_act_times))
-        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        print("ALE Act Process            : " + str(mean_time_frame * 1000) + " ms")
         mean_time_frame = np.mean(np.array(gen_frame_times))
-        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        print("Generate Frames Process    : " + str(mean_time_frame * 1000) + " ms")
         mean_time_frame = np.mean(np.array(encode_times))
-        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        print("Encode Frames Process      : " + str(mean_time_frame * 1000) + " ms")
 
-        print("\n")
+        print("")
 
         nodelay_times = dump_time_queue_server(time_q)
         mean_time_frame = np.mean(np.array(nodelay_times))
-        print("Frame Send Process         : " + str(mean_time_frame) + " s")
+        print("Frame Send Process         : " + str(mean_time_frame * 1000) + " ms")

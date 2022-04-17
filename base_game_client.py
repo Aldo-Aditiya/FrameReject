@@ -166,22 +166,22 @@ if __name__ == "__main__":
     if FLAGS.profiling:
         mean_time_frame = np.mean(np.array(frame_times))
         print("\n")
-        print("Client End to End Process: " + str(mean_time_frame) + " s, or " + str(1/mean_time_frame) + " FPS\n")
+        print("Client End to End Process  : " + str(mean_time_frame * 1000) + " ms, or " + str(1/mean_time_frame) + " FPS\n")
 
         mean_time_frame = np.mean(np.array(keypress_times))
-        print("Keypress Process           : " + str(mean_time_frame) + " s")
+        print("Keypress Process           : " + str(mean_time_frame * 1000) + " ms")
         mean_time_frame = np.mean(np.array(send_int_times))
-        print("Send Input Process         : " + str(mean_time_frame) + " s")
+        print("Send Input Process         : " + str(mean_time_frame * 1000) + " ms")
         mean_time_frame = np.mean(np.array(decode_times))
-        print("Frame Decode Process       : " + str(mean_time_frame) + " s")
+        print("Frame Decode Process       : " + str(mean_time_frame * 1000) + " ms")
         mean_time_frame = np.mean(np.array(pygame_times))
-        print("Pygame Display Process     : " + str(mean_time_frame) + " s")
+        print("Pygame Display Process     : " + str(mean_time_frame * 1000) + " ms")
 
-        print("\n")
+        print("")
 
         delay_times, nodelay_times = dump_time_queue_client(time_q)
         mean_time_frame = np.mean(np.array(delay_times))
-        print("Frame Rcv w/ Added Delay   : " + str(mean_time_frame) + " s")
+        print("Frame Rcv w/ Added Delay   : " + str(mean_time_frame * 1000) + " ms")
         mean_time_frame = np.mean(np.array(nodelay_times))
-        print("Frame Rcv w/o Added Delay  : " + str(mean_time_frame) + " s")
+        print("Frame Rcv w/o Added Delay  : " + str(mean_time_frame * 1000) + " ms")
 

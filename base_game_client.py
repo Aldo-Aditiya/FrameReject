@@ -37,19 +37,19 @@ class ClientFrameReceiver(Process):
         self.cl_socket.start_client(self.server_address, self.input_port)
 
         while not self.stopped:
+            frame_process_time_items = []
+            frame_process_starttime = time.time()
             try:
-                frame_process_time_items = []
-                frame_process_starttime = time.time()
-
-                time.sleep(FLAGS.frame_delay_ms / 1000)
-                frame_process_time_items.append(time.time() - frame_process_starttime)
-
                 data = self.cl_socket.client_receive_arr(decode=False)
                 self.q.put(data)
+
+                cl_rcv_time = time.time() - frame_process_starttime
+                frame_process_time_items.append(cl_rcv_time)
+
+                time.sleep(0)
                 frame_process_time_items.append(time.time() - frame_process_starttime)
 
                 self.time_q.put(frame_process_time_items)
-
             except:
                 pass
         
@@ -73,21 +73,21 @@ def get_pygame_keypress():
     
     return num
 
-def dump_time_queue_client(time_q):
+def dump_time_queue(time_q):
     """
     Returns items from time queue into two separate lists.
     """
-    result_delay = []
-    result_nodelay = []
+    result_proc = []
+    result_full = []
 
     time_q.put('STOP')
 
     for i in iter(time_q.get, 'STOP'):
-        result_nodelay.append(i[0])
-        result_delay.append(i[1])
+        result_proc.append(i[0])
+        result_full.append(i[1])
     time.sleep(0.01)
 
-    return result_delay, result_nodelay
+    return result_proc, result_full
 
 if __name__ == "__main__":
 
@@ -161,7 +161,10 @@ if __name__ == "__main__":
                 pygame.display.update()
                 pygame_times.append(time.time() - pygame_starttime)
 
-    main_socket.close_client()
+    try:
+        main_socket.close_client()
+    except:
+        pass
 
     if FLAGS.profiling:
         mean_time_frame = np.mean(np.array(frame_times))
@@ -179,9 +182,9 @@ if __name__ == "__main__":
 
         print("")
 
-        delay_times, nodelay_times = dump_time_queue_client(time_q)
-        mean_time_frame = np.mean(np.array(delay_times))
-        print("Frame Rcv w/ Added Delay   : " + str(mean_time_frame * 1000) + " ms")
-        mean_time_frame = np.mean(np.array(nodelay_times))
-        print("Frame Rcv w/o Added Delay  : " + str(mean_time_frame * 1000) + " ms")
+        rcv_frame_times, full_frame_times = dump_time_queue(time_q)
+        mean_time_frame = np.mean(np.array(rcv_frame_times))
+        print("Frame Rcv Process          : " + str(mean_time_frame * 1000) + " ms")
+        mean_time_frame = np.mean(np.array(full_frame_times))
+        print("Frame Rcv w/ Delay         : " + str(mean_time_frame * 1000) + " ms")
 

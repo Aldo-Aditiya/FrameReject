@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(description='')
 
 parser.add_argument('--main_port', type=int, help='Socket Port for Main Loop', dest='main_port')
 parser.add_argument('--input_port', type=int, help='Socket Port for Input Loop', dest='input_port')
+parser.add_argument('--frame_delay_ms', default=0, type=int, help='ms Delay in frame sending', dest='frame_delay_ms')
 parser.add_argument('--profiling', help='If True, prints profiling of code components - also randomizes inputs', 
                     action='store_true', dest='profiling')
 
@@ -37,12 +38,23 @@ class ServerFrameSender(Process):
             if self.q.empty():
                 pass
             else:
+                frame_process_time_items = []
                 frame_process_starttime = time.time()
-
                 arr = self.q.get()
                 self.s_socket.server_send_arr(arr, encode=False)
+                send_time = time.time() - frame_process_starttime
+                frame_process_time_items.append(send_time)
 
-                self.time_q.put(time.time() - frame_process_starttime)
+                # Make sure frame delay is always constant
+                if send_time >= (FLAGS.frame_delay_ms / 1000):
+                    sleep_time = 0
+                else: 
+                    sleep_time = (FLAGS.frame_delay_ms / 1000) - send_time
+
+                time.sleep(sleep_time)
+                frame_process_time_items.append(time.time() - frame_process_starttime)
+
+                self.time_q.put(frame_process_time_items)
         
     def stop(self):
         self.stopped = True
@@ -50,19 +62,21 @@ class ServerFrameSender(Process):
         self.join()
         self.close()
 
-def dump_time_queue_server(time_q):
+def dump_time_queue(time_q):
     """
     Returns items from time queue into two separate lists.
     """
-    result_nodelay = []
+    result_proc = []
+    result_full = []
 
     time_q.put('STOP')
 
     for i in iter(time_q.get, 'STOP'):
-        result_nodelay.append(i)
+        result_proc.append(i[0])
+        result_full.append(i[1])
     time.sleep(0.01)
 
-    return result_nodelay
+    return result_proc, result_full
 
 if __name__ == "__main__":
     # ALE Interface Initialization
@@ -174,6 +188,8 @@ if __name__ == "__main__":
 
         print("")
 
-        nodelay_times = dump_time_queue_server(time_q)
-        mean_time_frame = np.mean(np.array(nodelay_times))
+        send_frame_times, full_frame_times = dump_time_queue(time_q)
+        mean_time_frame = np.mean(np.array(send_frame_times))
         print("Frame Send Process         : " + str(mean_time_frame * 1000) + " ms")
+        mean_time_frame = np.mean(np.array(full_frame_times))
+        print("Frame Send Process w/ Delay: " + str(mean_time_frame * 1000) + " ms")

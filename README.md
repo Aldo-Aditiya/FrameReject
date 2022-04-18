@@ -19,7 +19,7 @@ python3 base_game_server.py --main_port 10500 --input_port 10501
 
 Example Client Command
 ```
-python3 base_game_client.py --server_address '0.0.0.0' --main_port 10500 --input_port 10501 --frame_delay_ms 0
+python3 base_game_client.py --server_address 'localhost' --main_port 10500 --input_port 10501
 ```
 
 You can also do profiling by adding the `--profiling` flag on either client or server. Note that in server profiling, inputs will be randomized instead of manually inputted from the player.

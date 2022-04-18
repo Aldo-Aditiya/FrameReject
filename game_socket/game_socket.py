@@ -12,7 +12,7 @@ class GameServerSocket():
         self.server_socket = socket.socket() 
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.server_socket.bind(('0.0.0.0', port))
+        self.server_socket.bind(('localhost', port))
         self.server_socket.listen(5)
         
         print('Waiting for a connection...')

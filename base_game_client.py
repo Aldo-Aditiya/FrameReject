@@ -42,7 +42,7 @@ class ClientFrameReceiver(Process):
             try:
                 data = self.cl_socket.client_receive_arr(decode=False)
                 self.q.put(data)
-
+                
                 cl_rcv_time = time.time() - frame_process_starttime
                 frame_process_time_items.append(cl_rcv_time)
 

@@ -89,8 +89,8 @@ class GameClientSocket():
         try:
             self.client_socket.connect((server_address, port))
             print(f'Connected to {server_address} on port {port}')
-        except socket.error:
-            print(f'Connection to {server_address} on port {port} failed: {socket.error}')
+        except OSError as e:
+            print(f'Connection to {server_address} on port {port} failed: {e.errno}: {e.strerror}')
 
     def client_receive_arr(self, decode=True):
         '''

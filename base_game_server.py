@@ -140,23 +140,27 @@ if __name__ == "__main__":
                 a = minimal_actions[keypress]
             else:
                 a = minimal_actions[np.random.randint(len(minimal_actions))]
-            rcv_int_times.append(time.time() - rcv_int_starttime)
+            rcv_int_time = time.time() - rcv_int_starttime
+            rcv_int_times.append(rcv_int_time)
 
             # ALE Act
             ale_act_starttime = time.time()
             reward = ale.act(a);
-            ale_act_times.append(time.time() - ale_act_starttime)
+            ale_act_time = time.time() - ale_act_starttime
+            ale_act_times.append(ale_act_time)
             
             # Frame Generation
             gen_frame_starttime = time.time()
             frame = ale.getScreenRGB()
             frame = np.flip(np.rot90(frame), axis=0)
-            gen_frame_times.append(time.time() - gen_frame_starttime)
+            gen_frame_time = time.time() - gen_frame_starttime
+            gen_frame_times.append(gen_frame_time)
 
             # Encode Frame
             encode_starttime = time.time()
             frame = main_socket.encode_arr(frame)
-            encode_times.append(time.time() - encode_starttime)
+            encode_time = time.time() - encode_starttime
+            encode_times.append(encode_time)
             
             # Send Frames
             q.put(frame)

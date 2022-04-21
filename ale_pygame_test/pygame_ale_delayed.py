@@ -12,7 +12,7 @@ ale = ALEInterface()
 ale.setInt("random_seed", 42)
 ale.setFloat("repeat_action_probability", 0)
 
-rom_file = "./rom/breakout.bin"
+rom_file = "../rom/breakout.bin"
 ale.loadROM(rom_file)
 
 minimal_actions = ale.getMinimalActionSet()

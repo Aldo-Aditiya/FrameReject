@@ -159,6 +159,7 @@ for ep in range(FLAGS.num_ep):
     ball_states = []
     previous_ball_positions = []
     keypresses = []
+    previous_keypresses = []
 
     previous_paddle_position = [0, 0]
     previous_ball_position = [0, 0]
@@ -199,6 +200,7 @@ for ep in range(FLAGS.num_ep):
             ball_states.append(ball_state)
             previous_ball_positions.append(previous_ball_position)
             keypresses.append(keypress)
+            previous_keypresses.append(previous_keypress)
 
             # Handle 0-valued inputs in between navigational inputs
             if (not FLAGS.cont_input):
@@ -221,7 +223,8 @@ for ep in range(FLAGS.num_ep):
                'ball_position': ball_positions,
                'ball_state': ball_states,
                'previous_ball_position': previous_ball_positions,
-               'keypress': keypresses}
+               'keypress': keypresses,
+               'previous_keypress': previous_keypresses}
     if (FLAGS.collect_data):
         df = pd.DataFrame(df_dict)
 

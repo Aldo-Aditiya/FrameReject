@@ -100,8 +100,6 @@ while (episode < FLAGS.num_ep):
             a = minimal_actions[keypress]
         else:
             a = minimal_actions[np.random.randint(len(minimal_actions))]
-
-        print(keypress)
         
         # ALE Act loop
         reward = ale.act(a);

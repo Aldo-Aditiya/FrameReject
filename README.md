@@ -14,7 +14,7 @@ The Game Client/Server interaction is implemented as above. Client will receive 
 ### Using the Game Client/Server Locally
 Example Server Command (Run this first)
 ```
-python3 base_game_server.py --main_port 10500 --input_port 10501
+python3 base_game_server.py --server_address 'localhost' --main_port 10500 --input_port 10501
 ```
 
 Example Client Command
@@ -23,3 +23,5 @@ python3 base_game_client.py --server_address 'localhost' --main_port 10500 --inp
 ```
 
 You can also do profiling by adding the `--profiling` flag on either client or server. Note that in server profiling, inputs will be randomized instead of manually inputted from the player.
+
+Note: For Macbooks, you need to use `0.0.0.0` as the `server_address`, instead of `localhost`.

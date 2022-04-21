@@ -10,6 +10,7 @@ from game_socket.game_socket import GameServerSocket
 # Handle Arguments
 parser = argparse.ArgumentParser(description='')
 
+parser.add_argument('--server_address', type=str, help='Server IP Address', dest='server_address')
 parser.add_argument('--main_port', type=int, help='Socket Port for Main Loop', dest='main_port')
 parser.add_argument('--input_port', type=int, help='Socket Port for Input Loop', dest='input_port')
 parser.add_argument('--profiling', help='If True, prints profiling of code components - also randomizes inputs', 
@@ -19,19 +20,20 @@ FLAGS = parser.parse_args()
 
 # Threaded Input Functions
 class ServerFrameSender(Process):
-    def __init__(self, q, time_q, input_port):
+    def __init__(self, q, time_q, server_address, input_port):
         Process.__init__(self)
         self.daemon = True
         self.stopped = False
         
         self.input_port = input_port
+        self.server_address = server_address
 
         self.q = q
         self.time_q = time_q
     
     def run(self):
         self.s_socket = GameServerSocket()
-        self.s_socket.start_server(self.input_port)
+        self.s_socket.start_server(self.server_address, self.input_port)
 
         while not self.stopped:
             if self.q.empty():
@@ -93,8 +95,8 @@ if __name__ == "__main__":
     q = Queue()
     time_q = Queue()
     main_socket = GameServerSocket()
-    main_socket.start_server(FLAGS.main_port)
-    p_sfs = ServerFrameSender(q, time_q, FLAGS.input_port)
+    main_socket.start_server(FLAGS.server_address, FLAGS.main_port)
+    p_sfs = ServerFrameSender(q, time_q, FLAGS.server_address, FLAGS.input_port)
 
     # Main Game Loop
     p_sfs.start()

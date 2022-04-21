@@ -8,11 +8,11 @@ class GameServerSocket():
     def __init__(self):
         pass
 
-    def start_server(self, port):
+    def start_server(self, server_address, port):
         self.server_socket = socket.socket() 
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.server_socket.bind(('localhost', port))
+        self.server_socket.bind((server_address, port))
         self.server_socket.listen(5)
         
         print('Waiting for a connection...')
@@ -89,8 +89,8 @@ class GameClientSocket():
         try:
             self.client_socket.connect((server_address, port))
             print(f'Connected to {server_address} on port {port}')
-        except socket.error:
-            print(f'Connection to {server_address} on port {port} failed: {socket.error}')
+        except OSError as e:
+            print(f'Connection to {server_address} on port {port} failed: {e.errno}: {e.strerror}')
 
     def client_receive_arr(self, decode=True):
         '''

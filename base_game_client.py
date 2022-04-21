@@ -11,10 +11,11 @@ from game_socket.game_socket import GameClientSocket
 # Handle Arguments
 parser = argparse.ArgumentParser(description='')
 
+parser.add_argument('--cont_input', default=False, help='Enables Continuous Presses as Input', 
+                    action='store_true', dest='cont_input')
 parser.add_argument('--server_address', type=str, help='Server IP Address', dest='server_address')
 parser.add_argument('--main_port', type=int, help='Socket Port for Main Loop', dest='main_port')
 parser.add_argument('--input_port', type=int, help='Socket Port for Input Loop', dest='input_port')
-parser.add_argument('--frame_delay_ms', default=0, type=int, help='ms Delay in frame sending', dest='frame_delay_ms')
 parser.add_argument('--profiling', help='If True, prints profiling of code components', action='store_true', dest='profiling')
 
 FLAGS = parser.parse_args()
@@ -41,7 +42,6 @@ class ClientFrameReceiver(Process):
                 frame_process_time_items = []
                 frame_process_starttime = time.time()
 
-                time.sleep(FLAGS.frame_delay_ms / 1000)
                 frame_process_time_items.append(time.time() - frame_process_starttime)
 
                 data = self.cl_socket.client_receive_arr(decode=False)
@@ -59,17 +59,39 @@ class ClientFrameReceiver(Process):
         self.join() 
         self.close()
 
-def get_pygame_keypress():
-    events = pygame.event.get()
-    num = 0
-    if events != []:
-        if events[0].type == pygame.KEYDOWN:
-            if events[0].key == pygame.K_LEFT:
-                num = 3
-            if events[0].key == pygame.K_RIGHT:
-                num = 2
-            if events[0].key == pygame.K_UP:
-                num = 1
+def get_pygame_keypress(cont_input, prev_num=None):
+    if not cont_input:
+        events = pygame.event.get()
+        num = 0
+        if events != []:
+            if events[0].type == pygame.KEYDOWN:
+                if events[0].key == pygame.K_LEFT:
+                    num = 3
+                if events[0].key == pygame.K_RIGHT:
+                    num = 2
+                if events[0].key == pygame.K_UP:
+                    num = 1
+    else:
+        events = pygame.event.get()
+        if events != []:
+            if events[0].type == pygame.KEYDOWN:
+                if events[0].key == pygame.K_LEFT:
+                    num = 3
+                if events[0].key == pygame.K_RIGHT:
+                    num = 2
+                if events[0].key == pygame.K_UP:
+                    num = 1
+            elif events[0].type == pygame.KEYUP:
+                if events[0].key == pygame.K_LEFT:
+                    num = 0
+                if events[0].key == pygame.K_RIGHT:
+                    num = 0
+                if events[0].key == pygame.K_UP:
+                    num = 0
+            else:
+                num = prev_num
+        else:
+            num = prev_num
     
     return num
 
@@ -106,6 +128,7 @@ if __name__ == "__main__":
     p_cfr.start()
 
     keypress = 0
+    last_sent_keypress = 0
     is_game_over = False
 
     frame_times = []
@@ -117,10 +140,11 @@ if __name__ == "__main__":
     max_frame_time = 1 / 60
     frame_starttime = time.time()
 
+
     while not is_game_over:
         # Get Player Keypress
         keypress_starttime = time.time()
-        if keypress == 0: keypress = get_pygame_keypress()
+        if keypress == 0: keypress = get_pygame_keypress(FLAGS.cont_input, prev_num=last_sent_keypress)
         keypress_times.append(time.time() - keypress_starttime)
 
         running_frame_time = (time.time() - frame_starttime)
@@ -132,6 +156,7 @@ if __name__ == "__main__":
             send_int_starttime = time.time()
             try:
                 main_socket.client_send_int(keypress)
+                last_sent_keypress = keypress
             except:
                 pass
             send_int_times.append(time.time() - send_int_starttime)

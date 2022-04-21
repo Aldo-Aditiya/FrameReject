@@ -10,7 +10,7 @@ import pygame
 parser = argparse.ArgumentParser(description='')
 
 parser.add_argument('--num_ep', default=1, type=int, help='Number of Episodes', dest='num_ep')
-parser.add_argument('--cont_input', default=True, help='Enables Continuous Presses as Input', 
+parser.add_argument('--cont_input', default=False, help='Enables Continuous Presses as Input', 
                     action='store_true', dest='cont_input')
 parser.add_argument('--rand_input', default=False, help='Enables Randomized Inputs', 
                     action='store_true', dest='rand_input')
@@ -18,7 +18,7 @@ parser.add_argument('--rand_input', default=False, help='Enables Randomized Inpu
 FLAGS = parser.parse_args()
 
 # Input Function
-def get_pygame_keypress(cont_input):
+def get_pygame_keypress(cont_input, prev_num=None):
     if not cont_input:
         events = pygame.event.get()
         num = 0
@@ -31,14 +31,26 @@ def get_pygame_keypress(cont_input):
                 if events[0].key == pygame.K_UP:
                     num = 1
     else:
-        num = 0
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            num = 3
-        if keys[pygame.K_RIGHT]:
-            num = 2
-        if keys[pygame.K_UP]:
-            num = 1
+        events = pygame.event.get()
+        if events != []:
+            if events[0].type == pygame.KEYDOWN:
+                if events[0].key == pygame.K_LEFT:
+                    num = 3
+                if events[0].key == pygame.K_RIGHT:
+                    num = 2
+                if events[0].key == pygame.K_UP:
+                    num = 1
+            elif events[0].type == pygame.KEYUP:
+                if events[0].key == pygame.K_LEFT:
+                    num = 0
+                if events[0].key == pygame.K_RIGHT:
+                    num = 0
+                if events[0].key == pygame.K_UP:
+                    num = 0
+            else:
+                num = prev_num
+        else:
+            num = prev_num
     
     return num
 
@@ -74,21 +86,22 @@ screen = pygame.display.set_mode((screen_height, screen_width))
 episode = 0
 time_frame = []
 
+keypress = 0
+
 while (episode < FLAGS.num_ep):
     
     print(f"\nEpisode: {episode}")
     while not ale.game_over():
         start_time = time.time()
         
-        # Pygame event loop
-        events = pygame.event.get()
-        
+        # Pygame event loop        
         if not FLAGS.rand_input:
-            keypress = 0
-            keypress = get_pygame_keypress(FLAGS.cont_input)
+            keypress = get_pygame_keypress(FLAGS.cont_input, prev_num=keypress)
             a = minimal_actions[keypress]
         else:
             a = minimal_actions[np.random.randint(len(minimal_actions))]
+
+        print(keypress)
         
         # ALE Act loop
         reward = ale.act(a);

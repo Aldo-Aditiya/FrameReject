@@ -113,8 +113,8 @@ def generate_game_state(objects_position, previous_objects_position):
     return paddle_state, ball_state
 
 # Define Directories of Interest
-rom_file = "../rom/breakout.bin"
-data_dir = "../_data/"
+rom_file = "./rom/breakout.bin"
+data_dir = "./_data/"
 
 # ALE Interface Initialization
 ale = ALEInterface()

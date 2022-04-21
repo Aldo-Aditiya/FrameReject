@@ -71,27 +71,38 @@ def get_pygame_keypress(cont_input, prev_num=None):
                     num = 2
                 if events[0].key == pygame.K_UP:
                     num = 1
+    # else:
+    #     events = pygame.event.get()
+    #     if events != []:
+    #         if events[0].type == pygame.KEYDOWN:
+    #             if events[0].key == pygame.K_LEFT:
+    #                 num = 3
+    #             if events[0].key == pygame.K_RIGHT:
+    #                 num = 2
+    #             if events[0].key == pygame.K_UP:
+    #                 num = 1
+    #         elif events[0].type == pygame.KEYUP:
+    #             if events[0].key == pygame.K_LEFT:
+    #                 num = 0
+    #             if events[0].key == pygame.K_RIGHT:
+    #                 num = 0
+    #             if events[0].key == pygame.K_UP:
+    #                 num = 0
+    #         else:
+    #             num = prev_num
+    #     else:
+    #         num = prev_num
+    
     else:
-        events = pygame.event.get()
-        if events != []:
-            if events[0].type == pygame.KEYDOWN:
-                if events[0].key == pygame.K_LEFT:
-                    num = 3
-                if events[0].key == pygame.K_RIGHT:
-                    num = 2
-                if events[0].key == pygame.K_UP:
-                    num = 1
-            elif events[0].type == pygame.KEYUP:
-                if events[0].key == pygame.K_LEFT:
-                    num = 0
-                if events[0].key == pygame.K_RIGHT:
-                    num = 0
-                if events[0].key == pygame.K_UP:
-                    num = 0
-            else:
-                num = prev_num
-        else:
-            num = prev_num
+        num = 0
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_LEFT]:
+            num = 3
+        if keys[pygame.K_RIGHT]:
+            num = 2
+        if keys[pygame.K_UP]:
+            num = 1
     
     return num
 
@@ -157,6 +168,7 @@ if __name__ == "__main__":
             try:
                 main_socket.client_send_int(keypress)
                 last_sent_keypress = keypress
+                print(keypress)
             except:
                 pass
             send_int_times.append(time.time() - send_int_starttime)

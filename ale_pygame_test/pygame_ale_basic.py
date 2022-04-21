@@ -1,18 +1,53 @@
-import os
-import sys
 import time
+import argparse
 
 import numpy as np
 
 from ale_py import ALEInterface
 import pygame
 
+# Handle Arguments
+parser = argparse.ArgumentParser(description='')
+
+parser.add_argument('--num_ep', default=1, type=int, help='Number of Episodes', dest='num_ep')
+parser.add_argument('--cont_input', default=True, help='Enables Continuous Presses as Input', 
+                    action='store_true', dest='cont_input')
+parser.add_argument('--rand_input', default=False, help='Enables Randomized Inputs', 
+                    action='store_true', dest='rand_input')
+
+FLAGS = parser.parse_args()
+
+# Input Function
+def get_pygame_keypress(cont_input):
+    if not cont_input:
+        events = pygame.event.get()
+        num = 0
+        if events != []:
+            if events[0].type == pygame.KEYDOWN:
+                if events[0].key == pygame.K_LEFT:
+                    num = 3
+                if events[0].key == pygame.K_RIGHT:
+                    num = 2
+                if events[0].key == pygame.K_UP:
+                    num = 1
+    else:
+        num = 0
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            num = 3
+        if keys[pygame.K_RIGHT]:
+            num = 2
+        if keys[pygame.K_UP]:
+            num = 1
+    
+    return num
+
 # ALE Interface Initialization
 ale = ALEInterface()
 ale.setInt("random_seed", 42)
 ale.setFloat("repeat_action_probability", 0)
 
-rom_file = "./rom/breakout.bin"
+rom_file = "../rom/breakout.bin"
 ale.loadROM(rom_file)
 
 minimal_actions = ale.getMinimalActionSet()
@@ -39,7 +74,7 @@ screen = pygame.display.set_mode((screen_height, screen_width))
 episode = 0
 time_frame = []
 
-while (episode < 1):
+while (episode < FLAGS.num_ep):
     
     print(f"\nEpisode: {episode}")
     while not ale.game_over():
@@ -47,20 +82,15 @@ while (episode < 1):
         
         # Pygame event loop
         events = pygame.event.get()
-        #if events != []: print(events)
         
-        a = minimal_actions[0]
-        if events != []:
-            if events[0].type == pygame.KEYDOWN:
-                if events[0].key == pygame.K_LEFT:
-                    a = minimal_actions[3]
-                if events[0].key == pygame.K_RIGHT:
-                    a = minimal_actions[2]
-                if events[0].key == pygame.K_UP:
-                    a = minimal_actions[1]
+        if not FLAGS.rand_input:
+            keypress = 0
+            keypress = get_pygame_keypress(FLAGS.cont_input)
+            a = minimal_actions[keypress]
+        else:
+            a = minimal_actions[np.random.randint(len(minimal_actions))]
         
         # ALE Act loop
-        #a = minimal_actions[np.random.randint(len(minimal_actions))] #uncomment to randomize a
         reward = ale.act(a);
         
         # Display Loop
@@ -76,4 +106,4 @@ while (episode < 1):
     ale.reset_game() 
 
 mean_time_frame = np.mean(np.array(time_frame))
-print("Display Random Action: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")
+print("Game Loop Time: " + str(mean_time_frame) + "s, or " + str(1/mean_time_frame) + " FPS")

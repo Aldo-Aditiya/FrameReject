@@ -14,3 +14,4 @@ ale_pygame_test/.ipynb_checkpoints/ale_tryout-checkpoint.ipynb
 .DS_Store
 __pycache__/game_socket.cpython-39.pyc
 game_socket/__pycache__/game_socket.cpython-39.pyc
+data.csv

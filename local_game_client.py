@@ -171,8 +171,13 @@ for ep in range(FLAGS.num_ep):
     previous_ball_position = [0, 0]
     previous_keypress = 0
 
+    if (FLAGS.cont_input): 
+        input_setting = "cont" 
+    else: 
+        input_setting = "man"
+
     if FLAGS.collect_save_state:
-        pickle_dir = data_dir + timestamp + "_" + str(ep) + "_pickle/"
+        pickle_dir = data_dir + timestamp + "_" + str(ep) + "_" + input_setting + "_pickle/"
         if not os.path.exists(pickle_dir):
             os.makedirs(pickle_dir)
 
@@ -251,11 +256,6 @@ for ep in range(FLAGS.num_ep):
             df_dict['pickle_path'] = pickle_paths
 
         df = pd.DataFrame(df_dict)
-
-        if (FLAGS.cont_input): 
-            input_setting = "cont" 
-        else: 
-            input_setting = "man"
 
         csv_path = data_dir + timestamp + "_" + str(ep) + "_" + input_setting + '.csv'
         df.to_csv(csv_path, index=False)

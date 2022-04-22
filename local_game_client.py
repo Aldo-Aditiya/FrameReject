@@ -1,4 +1,6 @@
+import os
 import time
+import pickle
 from datetime import datetime
 import argparse
 
@@ -15,6 +17,8 @@ parser = argparse.ArgumentParser(description='')
 parser.add_argument('--num_ep', default=1, type=int, help='Number of Episodes', dest='num_ep')
 parser.add_argument('--collect_data', default=False, help='Enables game data collection to a separate csv file', 
                     action='store_true', dest='collect_data')
+parser.add_argument('--collect_save_state', default=False, help='Enables saving of game states, to be loaded from other game sessions', 
+                    action='store_true', dest='collect_save_state')   
 parser.add_argument('--cont_input', default=False, help='Enables Continuous Presses as Input', 
                     action='store_true', dest='cont_input')
 parser.add_argument('--rand_input', default=False, help='Enables Randomized Inputs', 
@@ -113,6 +117,7 @@ def generate_game_state(objects_position, previous_objects_position):
     return paddle_state, ball_state
 
 # Define Directories of Interest
+timestamp = str(datetime.now())[:-7]
 rom_file = "./rom/breakout.bin"
 data_dir = "./_data/"
 
@@ -145,7 +150,7 @@ screen = pygame.display.set_mode((screen_height, screen_width))
 
 # Main Loop
 time_frame = []
-timestamp = str(datetime.now())[:-7]
+i = 0
 
 for ep in range(FLAGS.num_ep):
 
@@ -160,10 +165,16 @@ for ep in range(FLAGS.num_ep):
     previous_ball_positions = []
     keypresses = []
     previous_keypresses = []
+    pickle_paths = []
 
     previous_paddle_position = [0, 0]
     previous_ball_position = [0, 0]
     previous_keypress = 0
+
+    if FLAGS.collect_save_state:
+        pickle_dir = data_dir + timestamp + "_" + str(ep) + "_pickle/"
+        if not os.path.exists(pickle_dir):
+            os.makedirs(pickle_dir)
 
     print(f"\nEpisode: {ep}")
     while not ale.game_over():
@@ -202,6 +213,13 @@ for ep in range(FLAGS.num_ep):
             keypresses.append(keypress)
             previous_keypresses.append(previous_keypress)
 
+            # Save Current Game State to Replicate Later
+            if FLAGS.collect_save_state:
+                pickle_path = pickle_dir + str(i)
+                with open(pickle_path, 'wb') as f:
+                    pickle.dump(ale.cloneState(), f)
+                pickle_paths.append(pickle_path)
+
             # Handle 0-valued inputs in between navigational inputs
             if (not FLAGS.cont_input):
                 if keypress == 0 and str(previous_paddle_position) != str(paddle_position):
@@ -212,12 +230,15 @@ for ep in range(FLAGS.num_ep):
             previous_paddle_position = paddle_position
             previous_ball_position = ball_position
 
+            i += 1
+
         time_frame.append(time.time() - start_time)
         
     ale.reset_game() 
 
     # Save Game Data for This Episode
-    df_dict = {'paddle_position': paddle_positions,
+    if (FLAGS.collect_data):
+        df_dict = {'paddle_position': paddle_positions,
                'paddle_state': paddle_states,
                'previous_paddle_position': previous_paddle_positions,
                'ball_position': ball_positions,
@@ -225,7 +246,10 @@ for ep in range(FLAGS.num_ep):
                'previous_ball_position': previous_ball_positions,
                'keypress': keypresses,
                'previous_keypress': previous_keypresses}
-    if (FLAGS.collect_data):
+
+        if FLAGS.collect_save_state:
+            df_dict['pickle_path'] = pickle_paths
+
         df = pd.DataFrame(df_dict)
 
         if (FLAGS.cont_input): 

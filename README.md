@@ -5,6 +5,8 @@ FrameReject is created as a project for NUS Computing CS5340 Course, 2nd Term of
 
 We have developed FrameReject specifically for the game "Breakout". We do not provide the rom files in this repo.
 
+Read More: [FrameReject Project Report](./docs/FrameReject_Report.pdf)
+
 ## Quick Start
 ### Requirements
 - pygame `pip install pygame`
